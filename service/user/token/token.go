@@ -1,4 +1,4 @@
-package user
+package token
 
 import (
 	"backend/source"
@@ -27,4 +27,21 @@ func GenerateToken(id, Name string) (string, error) {
 		source.Logger.Errorln(id, Name, err)
 	}
 	return token, err
+}
+
+func ParseToken(token string) (*Claims, error) {
+	c := new(Claims)
+	tokenClaims, err := jwt.ParseWithClaims(token, c, func(token *jwt.Token) (interface{}, error) {
+		return []byte("golang"), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if tokenClaims != nil {
+		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
+			return claims, nil
+		}
+	}
+	return nil, err
 }

@@ -1,4 +1,9 @@
-package utils
+package source
+
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 var resTemplateMan *ResTemplateManager
 
@@ -10,20 +15,24 @@ func init() {
 type ResTemplateManager struct {
 }
 
-type Res struct {
-	Code int
-	Msg  string
+func (r *ResTemplateManager) NewRes(c *gin.Context, code int, msg string, data interface{}) {
+	c.JSON(http.StatusOK, map[string]interface{}{"code": code, "msg": msg, "data": data})
+	return
 }
 
-func (r *ResTemplateManager) NewRes(code int, Msg string) *Res {
-	res := new(Res)
-	res.Code = code
-	res.Msg = Msg
-	return res
+func (r *ResTemplateManager) NewResWithoutData(c *gin.Context, code int, msg string) {
+	c.JSON(http.StatusOK, map[string]interface{}{"code": code, "msg": msg, "data": nil})
+	return
 }
 
-func (r *ResTemplateManager) NewSucceedRes() *Res {
-	return r.NewRes(1, "succeed")
+func (r *ResTemplateManager) NewSucceedRes(c *gin.Context, data interface{}) {
+	r.NewRes(c, 1, "succeed", data)
+	return
+}
+
+func (r *ResTemplateManager) NewSucceedResWithoutData(c *gin.Context) {
+	r.NewRes(c, 1, "succeed", map[string]string{})
+	return
 }
 
 func GetResTemplateManager() *ResTemplateManager {

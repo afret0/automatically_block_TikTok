@@ -1,3 +1,8 @@
 {
-  "mongo": "mongodb://admin:mhjs210424@127.0.0.1:27017"
+  "mongo": "mongodb://admin:mhjs210424@127.0.0.1:27017",
+  "redis": {
+    "addr": "127.0.0.1:6379",
+    "password": "",
+    "DB": 0
+  }
 }

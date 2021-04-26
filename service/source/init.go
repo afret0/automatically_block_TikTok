@@ -1,4 +1,4 @@
-package utils
+package source
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 var engine *gin.Engine
 var Logger *logrus.Logger
-var middlewareL *logrus.Logger
+var middlewareLogger *logrus.Logger
 var Config *viper.Viper
 var ctx context.Context
 var cancel context.CancelFunc
@@ -18,7 +18,7 @@ var cancel context.CancelFunc
 func init() {
 	engine = gin.New()
 	Logger = logrus.New()
-	middlewareL = logrus.New()
+	middlewareLogger = logrus.New()
 	Config = viper.New()
 
 	Logger.SetLevel(logrus.InfoLevel)
@@ -30,19 +30,19 @@ func init() {
 	defer cancel()
 
 	env := GetEnv()
+	engine.Use(gin.Recovery())
 	if env == "product" {
 		Config.SetConfigName("config")
-		engine.Use(gin.Recovery())
 		Logger.SetFormatter(&logrus.JSONFormatter{})
-		middlewareL.SetFormatter(&logrus.JSONFormatter{})
+		middlewareLogger.SetFormatter(&logrus.JSONFormatter{})
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		Config.SetConfigName("configTest")
 		Logger.SetFormatter(&logrus.TextFormatter{})
-		middlewareL.SetFormatter(&logrus.TextFormatter{})
+		middlewareLogger.SetFormatter(&logrus.TextFormatter{})
 	}
 
-	Config.AddConfigPath("./service/config")
+	Config.AddConfigPath("./config")
 	err := Config.ReadInConfig()
 	if err != nil {
 		Logger.Fatal(err)

@@ -14,7 +14,7 @@ func init() {
 
 type Sender interface {
 	Send() error
-	SendVerificationCode(phone string, vCode int) error
+	SendVerificationCode(phone string, vCode string) error
 }
 
 type SenderProxy struct {
@@ -22,10 +22,15 @@ type SenderProxy struct {
 	smsSender *SMSSender
 }
 
-func GetSender() *SenderProxy {
+func GetSender(sender string) *SenderProxy {
 	return senderProxy
 }
 
 func (s *SenderProxy) Send() error {
+	return nil
+}
+
+func (s *SenderProxy) SendVerificationCode(phone string, vCode string) error {
+	s.logger.Infoln(phone, vCode)
 	return nil
 }

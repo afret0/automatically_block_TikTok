@@ -1,4 +1,4 @@
-package utils
+package source
 
 import (
 	"github.com/gin-gonic/gin"
@@ -15,12 +15,12 @@ func LoggerMiddleware() gin.HandlerFunc {
 		reqMethod := c.Request.Method
 		reqUri := c.Request.RequestURI
 		clientIP := c.ClientIP()
-		middlewareL.WithFields(logrus.Fields{
+		middlewareLogger.WithFields(logrus.Fields{
 			"reqTime":  startT.Format("2006-01-02 15:04:05"),
 			"latencyT": latencyT,
 			"method":   reqMethod,
 			"uri":      reqUri,
 			"clientIP": clientIP,
-		}).Info("...")
+		}).Info("")
 	}
 }

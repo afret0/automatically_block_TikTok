@@ -43,8 +43,9 @@ func (v *Verifier) SetVerifyCode(phone, vCode string, expiration int) {
 
 func (v *Verifier) CheckVCode(phone string, vCodeForCheck string) bool {
 	key := v.GetVerifyKey(phone)
-	vCodeFromRedis := v.redisClient.Get(key)
-	if vCodeFromRedis.String() == vCodeForCheck {
+	get := v.redisClient.Get(key)
+	vCode, _ := get.Result()
+	if vCode == vCodeForCheck {
 		return true
 	}
 	return false
