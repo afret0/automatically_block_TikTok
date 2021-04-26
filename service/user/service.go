@@ -26,7 +26,7 @@ func (s *Service) RegisterUser(ctx *gin.Context) {
 func (s *Service) Login(ctx *gin.Context) {
 	token, err := man.Login(ctx.Query("phone"), ctx.Query("vCode"))
 	if err != nil {
-		resTM.NewResWithoutData(ctx, 100101, "login failed")
+		resTM.NewResWithoutData(ctx, code.Failed, "login failed")
 		return
 	}
 	resTM.NewSucceedRes(ctx, map[string]string{"token": token})
@@ -36,10 +36,19 @@ func (s *Service) Login(ctx *gin.Context) {
 func (s *Service) SendVerificationCode(ctx *gin.Context) {
 	err := man.SendVerificationCode(ctx.Query("sender"), ctx.Query("phone"))
 	if err != nil {
-		resTM.NewResWithoutData(ctx, 100101, "send failed")
+		resTM.NewResWithoutData(ctx, code.Failed, "send verification code failed")
 		return
 	}
 	resTM.NewSucceedResWithoutData(ctx)
+}
+
+func (s *Service) GetUserInfo(ctx *gin.Context) {
+	user, err := man.GetUserInfoByPhone(ctx.Query("phone"))
+	if err != nil {
+		resTM.NewRes(ctx, code.Failed, "get user info failed", user)
+		return
+	}
+	resTM.NewRes(ctx, 1, "ok", user)
 }
 
 func GetService() *Service {

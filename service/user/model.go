@@ -15,15 +15,18 @@ type User struct {
 	ObjID        primitive.ObjectID `bson:"_id,omitempty"`
 	ID           string             `json:"id"`
 	Name         string             `bson:"name" json:"name"`
+	Avatar       string             `bson:"avatar" json:"avatar"`
 	Phone        string             `bson:"phone" json:"phone"`
-	Password     string             `bson:"password" json:"password"`
 	WXName       string             `bson:"WXName" json:"WXName"`
-	Role         string             `bson:"role" json:"role"`
+	DM           int                `bson:"dm" json:"dm"`
+	Owner        int                `bson:"owner" json:"owner"`
 	Token        string             `bson:"token" json:"token"`
 	Store        string             `bson:"store" json:"store"`
 	RegisterTime float64            `bson:"registerTime" json:"registerTime"`
 	UpdateTime   float64            `bson:"updateTime" json:"updateTime"`
 }
+
+//db.user.createIndex({phone:1},{unique:true})
 
 type RoleList struct {
 	Boss     string

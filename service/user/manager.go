@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -39,17 +40,17 @@ func (m *Manager) RegisterUser(WXName, phone string) error {
 	//opt := new(options.UpdateOptions)
 	//T := true
 	//opt.Upsert = &T
-	//r, err := operator.UpdateOne(m.ctx, filter, upt, opt)
-	//if err != nil {
-	//	m.logger.Errorln(phone, err)
-	//	return err
+	//r, code := operator.UpdateOne(m.ctx, filter, upt, opt)
+	//if code != nil {
+	//	m.logger.Errorln(phone, code)
+	//	return code
 	//}
 	return nil
 }
 
 func (m *Manager) Login(phone, verificationCode string) (string, error) {
 	pjt := bson.M{"_id": 1, "name": 1, "token": 1}
-	user, err := m.FindOneUserByPhone(phone, pjt)
+	user, err := m.getOneUserByPhone(phone, pjt)
 	if err != nil {
 		return "", err
 	}
@@ -76,7 +77,7 @@ func (m *Manager) SendVerificationCode(senderName, phone string) error {
 	return sender.SendVerificationCode(phone, vCode)
 }
 
-func (m *Manager) FindOneUserByPhone(phone string, pjt interface{}) (*User, error) {
+func (m *Manager) getOneUserByPhone(phone string, pjt primitive.M) (*User, error) {
 	filter := bson.M{"phone": phone}
 	opt := new(options.FindOneOptions)
 	opt.Projection = pjt
@@ -85,4 +86,9 @@ func (m *Manager) FindOneUserByPhone(phone string, pjt interface{}) (*User, erro
 		m.logger.Errorln(phone, err)
 	}
 	return user, err
+}
+
+func (m *Manager) GetUserInfoByPhone(phone string) (*User, error) {
+	pjt := bson.M{"_id": 1, "name": 1, "avatar": 1, "dm": 1}
+	return m.getOneUserByPhone(phone, pjt)
 }

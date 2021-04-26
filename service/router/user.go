@@ -3,9 +3,10 @@ package router
 import "backend/user"
 
 func registerUserRouter() {
-	userRouter := e.Group("/user")
-	userSvr := user.GetService()
-	userRouter.PUT("/register", userSvr.RegisterUser)
-	userRouter.GET("/login", userSvr.Login)
-	userRouter.GET("/sendVerificationCode", userSvr.SendVerificationCode)
+	router := e.Group("/user")
+	svr := user.GetService()
+	router.PUT("/register", svr.RegisterUser)
+	router.GET("/login", svr.Login)
+	router.GET("/sendVerificationCode", svr.SendVerificationCode)
+	router.GET("/getUserInfo", svr.GetUserInfo)
 }
