@@ -1,7 +1,9 @@
-package user
+package dao
 
 import (
 	"backend/source"
+	"backend/source/tool"
+	"backend/user"
 	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
@@ -10,29 +12,33 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var operator *Operator
+var dao *Dao
 
-type Operator struct {
+type Dao struct {
 	collection *mongo.Collection
 	logger     *logrus.Logger
 	ctx        context.Context
 }
 
 func init() {
-	operator = new(Operator)
-	operator.collection = source.DB.Collection("user")
-	operator.logger = source.Logger
+	dao = new(Dao)
+	dao.collection = source.DB.Collection("user")
+	dao.logger = source.GetLogger()
+	dao.ctx = source.GetCtx()
 }
 
-func (o *Operator) Find(filter interface{}, opt *options.FindOptions) ([]*User, error) {
-	cur, err := o.collection.Find(o.ctx, filter, opt)
+func GetDao() *Dao {
+	return dao
+}
+
+func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*user.User, error) {
+	cur, err := d.collection.Find(d.ctx, filter, opt)
 	if err != nil {
-		source.Logger.Error(err)
 		return nil, err
 	}
-	users := make([]*User, 0)
-	for cur.Next(o.ctx) {
-		item := new(User)
+	users := make([]*user.User, 0)
+	for cur.Next(d.ctx) {
+		item := new(user.User)
 		err = cur.Decode(item)
 		if err != nil {
 			return nil, err
@@ -44,30 +50,33 @@ func (o *Operator) Find(filter interface{}, opt *options.FindOptions) ([]*User, 
 	}
 
 	defer func() {
-		_ = cur.Close(o.ctx)
+		_ = cur.Close(d.ctx)
 	}()
 
 	return users, err
 }
 
-func (o *Operator) UpdateOne(filter interface{}, update interface{}, opt ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	res, err := o.collection.UpdateOne(o.ctx, filter, update, opt...)
+func (d *Dao) UpdateOne(filter interface{}, update interface{}, opt *options.UpdateOptions) (*mongo.UpdateResult, error) {
+	res, err := d.collection.UpdateOne(d.ctx, filter, update, opt)
 	return res, err
 }
 
-func (o *Operator) FindOne(filter interface{}, opt *options.FindOneOptions) (*User, error) {
-	one := o.collection.FindOne(o.ctx, filter, opt)
+func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*user.User, error) {
+	one := d.collection.FindOne(d.ctx, filter, opt)
 	if one == nil {
 		return nil, errors.New("not find")
 	}
-	user := new(User)
-	err := one.Decode(user)
-	user.ID = source.ConObjectIDToString(user.ObjID)
-	return user, err
+	u := new(user.User)
+	err := one.Decode(u)
+	if err != nil {
+		return nil, err
+	}
+	u.ID = tool.ConObjectIDToString(u.ObjID)
+	return u, err
 }
 
-func (o *Operator) InsertOne(name, pwd, WXName, token string, opt ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	doc := bson.M{"name": name, "password": pwd, "WXName": WXName, "role": role.Customer, "token": token}
-	one, err := o.collection.InsertOne(o.ctx, doc, opt...)
+func (d *Dao) InsertOne(name, pwd, WXName, token string, opt ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+	doc := bson.M{"name": name, "password": pwd, "WXName": WXName, "role": user.GetRole().Customer, "token": token}
+	one, err := d.collection.InsertOne(d.ctx, doc, opt...)
 	return one, err
 }

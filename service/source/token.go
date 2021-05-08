@@ -1,4 +1,4 @@
-package token
+package tokenManager
 
 import (
 	"backend/source"
@@ -7,24 +7,26 @@ import (
 )
 
 type Claims struct {
-	ID   string
-	Name string
+	ID    string
+	Name  string
+	Phone string
 	jwt.StandardClaims
 }
 
-func GenerateToken(id, Name string) (string, error) {
+func GenerateToken(id, Name, phone string) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(3600 * 24 * time.Second)
+	expireTime := nowTime.Add(3600 * 16 * time.Second)
 	issuer := "pancake"
 	claims := new(Claims)
 	claims.ID = id
 	claims.Name = Name
+	claims.Phone = phone
 	claims.StandardClaims.ExpiresAt = expireTime.Unix()
 	claims.StandardClaims.Issuer = issuer
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).SigningString()
 	if err != nil {
-		source.Logger.Errorln(id, Name, err)
+		source.GetLogger().Errorln(id, Name, err)
 	}
 	return token, err
 }
