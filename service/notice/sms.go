@@ -9,7 +9,7 @@ var smsSender *SMSSender
 
 func init() {
 	smsSender = new(SMSSender)
-	smsSender.logger = source.Logger
+	smsSender.logger = source.GetLogger()
 }
 
 type SMSSender struct {

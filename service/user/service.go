@@ -7,16 +7,16 @@ import (
 )
 
 var svr *Service
-var resTM *source.ResTemplateManager
 
 func init() {
 	svr = new(Service)
-	svr.logger = source.Logger
-	resTM = source.GetResTemplateManager()
+	svr.logger = source.GetLogger()
+	svr.res = source.GetResTemplateManager()
 }
 
 type Service struct {
 	logger *logrus.Logger
+	res    *source.ResTemplateManager
 }
 
 func (s *Service) RegisterUser(ctx *gin.Context) {
@@ -26,29 +26,29 @@ func (s *Service) RegisterUser(ctx *gin.Context) {
 func (s *Service) Login(ctx *gin.Context) {
 	token, err := man.Login(ctx.Query("phone"), ctx.Query("vCode"))
 	if err != nil {
-		resTM.NewResWithoutData(ctx, code.Failed, "login failed")
+		s.res.NewResWithoutData(ctx, code.Failed, err.Error())
 		return
 	}
-	resTM.NewSucceedRes(ctx, map[string]string{"token": token})
+	s.res.NewSucceedRes(ctx, map[string]string{"token": token})
 	return
 }
 
 func (s *Service) SendVerificationCode(ctx *gin.Context) {
 	err := man.SendVerificationCode(ctx.Query("sender"), ctx.Query("phone"))
 	if err != nil {
-		resTM.NewResWithoutData(ctx, code.Failed, "send verification code failed")
+		s.res.NewResWithoutData(ctx, code.Failed, "send verification code failed")
 		return
 	}
-	resTM.NewSucceedResWithoutData(ctx)
+	s.res.NewSucceedResWithoutData(ctx)
 }
 
 func (s *Service) GetUserInfo(ctx *gin.Context) {
 	user, err := man.GetUserInfoByPhone(ctx.Query("phone"))
 	if err != nil {
-		resTM.NewRes(ctx, code.Failed, "get user info failed", user)
+		s.res.NewRes(ctx, code.Failed, "get user info failed", user)
 		return
 	}
-	resTM.NewRes(ctx, 1, "ok", user)
+	s.res.NewRes(ctx, 1, "ok", user)
 }
 
 func GetService() *Service {

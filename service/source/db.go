@@ -12,13 +12,13 @@ func getMongoClient() *mongo.Client {
 	uri := Config.GetString("mongo")
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri).SetMaxPoolSize(20))
 	if err != nil {
-		Logger.Fatal(err)
+		logger.Fatal(err)
 	}
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		Logger.Fatal(err)
+		logger.Fatal(err)
 	} else {
-		Logger.Info("connect to database succeed")
+		logger.Info("connect to database succeed")
 	}
 	return client
 }

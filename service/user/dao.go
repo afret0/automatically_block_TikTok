@@ -1,9 +1,8 @@
-package dao
+package user
 
 import (
 	"backend/source"
 	"backend/source/tool"
-	"backend/user"
 	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
@@ -31,14 +30,14 @@ func GetDao() *Dao {
 	return dao
 }
 
-func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*user.User, error) {
+func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*User, error) {
 	cur, err := d.collection.Find(d.ctx, filter, opt)
 	if err != nil {
 		return nil, err
 	}
-	users := make([]*user.User, 0)
+	users := make([]*User, 0)
 	for cur.Next(d.ctx) {
-		item := new(user.User)
+		item := new(User)
 		err = cur.Decode(item)
 		if err != nil {
 			return nil, err
@@ -61,12 +60,12 @@ func (d *Dao) UpdateOne(filter interface{}, update interface{}, opt *options.Upd
 	return res, err
 }
 
-func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*user.User, error) {
+func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*User, error) {
 	one := d.collection.FindOne(d.ctx, filter, opt)
 	if one == nil {
 		return nil, errors.New("not find")
 	}
-	u := new(user.User)
+	u := new(User)
 	err := one.Decode(u)
 	if err != nil {
 		return nil, err
@@ -76,7 +75,7 @@ func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*user.Us
 }
 
 func (d *Dao) InsertOne(name, pwd, WXName, token string, opt ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	doc := bson.M{"name": name, "password": pwd, "WXName": WXName, "role": user.GetRole().Customer, "token": token}
+	doc := bson.M{"name": name, "password": pwd, "WXName": WXName, "role": GetRole().Customer, "tokenManager": token}
 	one, err := d.collection.InsertOne(d.ctx, doc, opt...)
 	return one, err
 }

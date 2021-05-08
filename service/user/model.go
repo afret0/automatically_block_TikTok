@@ -17,10 +17,11 @@ type User struct {
 	Name         string             `bson:"name" json:"name"`
 	Avatar       string             `bson:"avatar" json:"avatar"`
 	Phone        string             `bson:"phone" json:"phone"`
+	Sex          int                `bson:"sex" json:"sex"`
 	WXName       string             `bson:"WXName" json:"WXName"`
-	DM           int                `bson:"dm" json:"dm"`
-	Owner        int                `bson:"owner" json:"owner"`
-	Token        string             `bson:"token" json:"token"`
+	DM           bool               `bson:"dm" json:"dm"`
+	Owner        string             `bson:"owner" json:"owner"`
+	Token        string             `bson:"tokenManager" json:"tokenManager"`
 	Store        string             `bson:"store" json:"store"`
 	RegisterTime float64            `bson:"registerTime" json:"registerTime"`
 	UpdateTime   float64            `bson:"updateTime" json:"updateTime"`
@@ -32,4 +33,8 @@ type RoleList struct {
 	Boss     string
 	DM       string
 	Customer string
+}
+
+func GetRole() *RoleList {
+	return role
 }

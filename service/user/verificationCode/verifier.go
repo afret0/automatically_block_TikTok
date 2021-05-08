@@ -14,7 +14,7 @@ var v *Verifier
 
 func init() {
 	v = new(Verifier)
-	v.logger = source.Logger
+	v.logger = source.GetLogger()
 	v.redisClient = source.GetRedisClient()
 	v.sender = notice.GetSmsSender()
 }

@@ -14,11 +14,12 @@ func init() {
 func RegisterRouter() {
 	registerUserRouter()
 	registerTestRouter()
+	registerScriptRouter()
 }
 
 func registerTestRouter() {
 	e.GET("/test", func(c *gin.Context) {
-		source.Logger.Info(source.Config.Get("mongo"))
+		source.GetLogger().Infoln(source.Config.Get("mongo"))
 		c.JSON(200, gin.H{"hello": "world"})
 	})
 }

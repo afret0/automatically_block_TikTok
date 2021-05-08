@@ -1,12 +1,16 @@
 package router
 
-import "backend/user"
+import (
+	"backend/source"
+	"backend/user"
+)
 
 func registerUserRouter() {
-	router := e.Group("/user")
 	svr := user.GetService()
-	router.PUT("/register", svr.RegisterUser)
-	router.GET("/login", svr.Login)
-	router.GET("/sendVerificationCode", svr.SendVerificationCode)
+	router := e.Group("/user")
+	router.Use(source.AuthMiddleware())
 	router.GET("/getUserInfo", svr.GetUserInfo)
+	e.GET("/login", user.GetService().Login)
+	e.PUT("/register", svr.RegisterUser)
+	e.GET("/sendVerificationCode", svr.SendVerificationCode)
 }

@@ -9,7 +9,7 @@ var senderProxy *SenderProxy
 
 func init() {
 	senderProxy = new(SenderProxy)
-	senderProxy.logger = source.Logger
+	senderProxy.logger = source.GetLogger()
 }
 
 type Sender interface {

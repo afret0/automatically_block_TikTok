@@ -12,7 +12,7 @@ func init() {
 	})
 	_, err := redisClient.Ping().Result()
 	if err != nil {
-		Logger.Fatalln(err)
+		logger.Fatalln(err)
 	}
 }
 

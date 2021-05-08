@@ -1,7 +1,6 @@
-package tokenManager
+package source
 
 import (
-	"backend/source"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
@@ -26,7 +25,7 @@ func GenerateToken(id, Name, phone string) (string, error) {
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).SigningString()
 	if err != nil {
-		source.GetLogger().Errorln(id, Name, err)
+		GetLogger().Errorln(id, Name, err)
 	}
 	return token, err
 }

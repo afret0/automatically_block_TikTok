@@ -1,9 +1,8 @@
-package dao
+package store
 
 import (
 	"backend/source"
 	"backend/source/tool"
-	"backend/store"
 	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
@@ -26,12 +25,12 @@ func init() {
 	d.ctx = source.GetCtx()
 }
 
-func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*store.Store, error) {
+func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*Store, error) {
 	one := d.collection.FindOne(d.ctx, filter, opt)
 	if one == nil {
 		return nil, errors.New("not find")
 	}
-	s := new(store.Store)
+	s := new(Store)
 	err := one.Decode(s)
 	if err != nil {
 		return nil, err
@@ -40,14 +39,14 @@ func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*store.S
 	return s, nil
 }
 
-func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*store.Store, error) {
+func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*Store, error) {
 	cur, err := d.collection.Find(d.ctx, filter, opt)
 	if err != nil {
 		return nil, err
 	}
-	stores := make([]*store.Store, 0)
+	stores := make([]*Store, 0)
 	for cur.Next(d.ctx) {
-		item := new(store.Store)
+		item := new(Store)
 		err = cur.Decode(item)
 		if err != nil {
 			return nil, err
