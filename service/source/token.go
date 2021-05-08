@@ -1,41 +1,57 @@
 package source
 
 import (
+	"errors"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
+var j *JWT
+var (
+	TokenExpired     error  = errors.New("Token is expired")
+	TokenNotValidYet error  = errors.New("Token not active yet")
+	TokenMalformed   error  = errors.New("That's not even a token")
+	TokenInvalid     error  = errors.New("Couldn't handle this token:")
+	signKey          []byte = []byte("AllYourBase")
+)
+
+func init() {
+	j = new(JWT)
+	j.logger = GetLogger()
+}
+
+type JWT struct {
+	logger *logrus.Logger
+}
+
 type Claims struct {
-	ID    string
-	Name  string
-	Phone string
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(id, Name, phone string) (string, error) {
+func (j *JWT) GenerateToken(id, Name, phone string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(3600 * 16 * time.Second)
 	issuer := "pancake"
-	claims := new(Claims)
-	claims.ID = id
-	claims.Name = Name
-	claims.Phone = phone
-	claims.StandardClaims.ExpiresAt = expireTime.Unix()
-	claims.StandardClaims.Issuer = issuer
-
-	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).SigningString()
+	c := Claims{id, Name, phone, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+	tokenS, err := token.SignedString(signKey)
 	if err != nil {
 		GetLogger().Errorln(id, Name, err)
 	}
-	return token, err
+	return tokenS, err
 }
 
-func ParseToken(token string) (*Claims, error) {
+func (j *JWT) ParseToken(token string) (*Claims, error) {
 	c := new(Claims)
 	tokenClaims, err := jwt.ParseWithClaims(token, c, func(token *jwt.Token) (interface{}, error) {
-		return []byte("golang"), nil
+		return signKey, nil
 	})
 	if err != nil {
+		j.logger.Errorln(token, err)
 		return nil, err
 	}
 
@@ -45,4 +61,8 @@ func ParseToken(token string) (*Claims, error) {
 		}
 	}
 	return nil, err
+}
+
+func GetJWT() *JWT {
+	return j
 }

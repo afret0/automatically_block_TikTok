@@ -10,13 +10,13 @@ import (
 // TODO 测试
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get("tokenManager")
+		token := c.Request.Header.Get("token")
 		if len(token) < 1 {
-			c.JSON(http.StatusOK, gin.H{"code": -1, "msg": "未携带 tokenManager, 请先登录"})
+			c.JSON(http.StatusOK, gin.H{"code": -1, "msg": "未携带 token, 请先登录"})
 			c.Abort()
 			return
 		}
-		claims, err := ParseToken(token)
+		claims, err := GetJWT().ParseToken(token)
 		if err != nil {
 			logger.Errorln(token, err)
 			c.JSON(http.StatusOK, gin.H{"code": -1, "msg": err.Error()})

@@ -54,19 +54,22 @@ func (m *Manager) Login(phone, verificationCode string) (string, error) {
 	if !m.verifier.CheckVCode(phone, verificationCode) {
 		return "", errors.New("verificationCode error")
 	}
-	pjt := bson.M{"_id": 1, "name": 1, "tokenManager": 1}
+	pjt := bson.M{"_id": 1, "name": 1, "token": 1}
 	user, err := m.getUserInfoByPhone(phone, pjt)
 	if err != nil {
 		m.logger.Errorln(phone, err)
 		return "", err
 	}
 
-	t, err := source.GenerateToken(user.Name, user.Name, user.Phone)
+	t, err := source.GetJWT().GenerateToken(user.ID, user.Name, user.Phone)
+	if err != nil {
+		return "", err
+	}
 	if t == user.Token {
 		return t, nil
 	}
 	filter := bson.M{"phone": phone}
-	upt := bson.M{"$set": bson.M{"tokenManager": t}}
+	upt := bson.M{"$set": bson.M{"token": t}}
 	opt := new(options.UpdateOptions)
 	_, err = m.dao.UpdateOne(filter, upt, opt)
 	if err != nil {
@@ -76,6 +79,7 @@ func (m *Manager) Login(phone, verificationCode string) (string, error) {
 }
 
 func (m *Manager) SendVerificationCode(senderName, phone string) error {
+	//TODO rate limit
 	vCode := m.verifier.GenVerifyCode()
 	m.verifier.SetVerifyCode(phone, vCode, 10)
 	sender := notice.GetSender(senderName)

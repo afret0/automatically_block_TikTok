@@ -43,7 +43,16 @@ func (s *Service) SendVerificationCode(ctx *gin.Context) {
 }
 
 func (s *Service) GetUserInfo(ctx *gin.Context) {
-	user, err := man.GetUserInfoByPhone(ctx.Query("phone"))
+	phone := ctx.Query("phone")
+	id := ctx.Query("id")
+	var user *User
+	var err error
+	if len(phone) > 0 {
+		user, err = man.GetUserInfoByPhone(phone)
+	}
+	if len(id) > 0 {
+		user, err = man.GetUserInfoByID(id)
+	}
 	if err != nil {
 		s.res.NewRes(ctx, code.Failed, "get user info failed", user)
 		return
