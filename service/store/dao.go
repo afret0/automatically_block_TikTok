@@ -3,7 +3,6 @@ package store
 import (
 	"backend/source"
 	"backend/source/tool"
-	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,18 +14,18 @@ var d *Dao
 type Dao struct {
 	collection *mongo.Collection
 	logger     *logrus.Logger
-	ctx        context.Context
+	*tool.CtxManager
 }
 
 func init() {
 	d = new(Dao)
 	d.collection = source.DB.Collection("store")
 	d.logger = source.GetLogger()
-	d.ctx = source.GetCtx()
+	d.CtxManager = tool.GetCtxManager()
 }
 
 func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*Store, error) {
-	one := d.collection.FindOne(d.ctx, filter, opt)
+	one := d.collection.FindOne(d.Ctx(), filter, opt)
 	if one == nil {
 		return nil, errors.New("not find")
 	}
@@ -40,12 +39,12 @@ func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*Store, 
 }
 
 func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*Store, error) {
-	cur, err := d.collection.Find(d.ctx, filter, opt)
+	cur, err := d.collection.Find(d.Ctx(), filter, opt)
 	if err != nil {
 		return nil, err
 	}
 	stores := make([]*Store, 0)
-	for cur.Next(d.ctx) {
+	for cur.Next(d.Ctx()) {
 		item := new(Store)
 		err = cur.Decode(item)
 		if err != nil {
@@ -58,7 +57,7 @@ func (d *Dao) Find(filter interface{}, opt *options.FindOptions) ([]*Store, erro
 	}
 
 	defer func() {
-		_ = cur.Close(d.ctx)
+		_ = cur.Close(d.Ctx())
 	}()
 
 	return stores, nil

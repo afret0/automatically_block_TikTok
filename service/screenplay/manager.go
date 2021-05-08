@@ -1,4 +1,4 @@
-package script
+package screenplay
 
 import (
 	"backend/source"
@@ -20,7 +20,7 @@ func init() {
 	m.dao = GetDao()
 }
 
-func (m *Manager) GetOneScriptInfo(id string) (*Script, error) {
+func (m *Manager) GetOneScriptInfo(id string) (*Screenplay, error) {
 	filter := bson.M{"id": id}
 	opt := new(options.FindOneOptions)
 	one, err := m.dao.FindOne(filter, opt)

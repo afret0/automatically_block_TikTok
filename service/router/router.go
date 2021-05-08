@@ -14,7 +14,7 @@ func init() {
 func RegisterRouter() {
 	registerUserRouter()
 	registerTestRouter()
-	registerScriptRouter()
+	registerScreenplayRouter()
 }
 
 func registerTestRouter() {

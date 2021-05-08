@@ -2,15 +2,6 @@ package user
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-var role *RoleList
-
-func init() {
-	role = new(RoleList)
-	role.DM = "DM"
-	role.Customer = "customer"
-	role.Boss = "boss"
-}
-
 type User struct {
 	ObjID        primitive.ObjectID `bson:"_id,omitempty"`
 	ID           string             `json:"id"`
@@ -20,7 +11,7 @@ type User struct {
 	Sex          int                `bson:"sex" json:"sex"`
 	WXName       string             `bson:"WXName" json:"WXName"`
 	DM           bool               `bson:"dm" json:"dm"`
-	Owner        string             `bson:"owner" json:"owner"`
+	Boss         bool               `bson:"boss" json:"boss"`
 	Token        string             `bson:"tokenManager" json:"tokenManager"`
 	Store        string             `bson:"store" json:"store"`
 	RegisterTime float64            `bson:"registerTime" json:"registerTime"`
@@ -28,13 +19,3 @@ type User struct {
 }
 
 //db.user.createIndex({phone:1},{unique:true})
-
-type RoleList struct {
-	Boss     string
-	DM       string
-	Customer string
-}
-
-func GetRole() *RoleList {
-	return role
-}

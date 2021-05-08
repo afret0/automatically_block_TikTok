@@ -14,4 +14,4 @@ type Store struct {
 	UpdateTime   float64            `bson:"updateTime" json:"updateTime"`
 }
 
-//
+//db.store.createIndex({name:1},{unique:true})

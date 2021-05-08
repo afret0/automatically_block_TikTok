@@ -1,4 +1,4 @@
-package script
+package screenplay
 
 var code *Code
 

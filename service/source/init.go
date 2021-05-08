@@ -13,22 +13,22 @@ var engine *gin.Engine
 var logger *logrus.Logger
 var middlewareLogger *logrus.Logger
 var Config *viper.Viper
-var ctx context.Context
-var cancel context.CancelFunc
 
 func init() {
 	engine = gin.New()
 	logger = logrus.New()
 	middlewareLogger = logrus.New()
 	Config = viper.New()
+	Config.AddConfigPath("./config")
+	err := Config.ReadInConfig()
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetReportCaller(true)
 
 	engine.Use(gin.Recovery(), LoggerMiddleware())
-
-	//ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 
 	env := tool.GetEnv()
 	engine.Use(gin.Recovery())
@@ -43,12 +43,6 @@ func init() {
 		middlewareLogger.SetFormatter(&logrus.TextFormatter{})
 	}
 
-	Config.AddConfigPath("./config")
-	err := Config.ReadInConfig()
-	if err != nil {
-		logger.Fatal(err)
-	}
-
 	DB = getDatabase()
 }
 
@@ -56,10 +50,8 @@ func GetLogger() *logrus.Logger {
 	return logger
 }
 
-func GetCtx() context.Context {
+func NewCtx() context.Context {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//defer cancel()
 	return ctx
-}
-
-func GetCancel() context.CancelFunc {
-	return cancel
 }

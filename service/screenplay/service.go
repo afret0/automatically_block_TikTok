@@ -1,4 +1,4 @@
-package script
+package screenplay
 
 import (
 	"backend/source"
@@ -18,7 +18,7 @@ func init() {
 	svr.res = source.GetResTemplateManager()
 }
 
-func (s *Service) GetOneScriptInfo(c *gin.Context) {
+func (s *Service) GetOneScreenplayInfo(c *gin.Context) {
 	info, err := s.manager.GetOneScriptInfo(c.Query("id"))
 	if err != nil {
 		s.res.NewResWithoutData(c, GetCode().Failed, err.Error())

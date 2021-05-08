@@ -7,14 +7,15 @@ import (
 )
 
 var DB *mongo.Database
+var client *mongo.Client
 
-func getMongoClient() *mongo.Client {
+func NewMongoClient() *mongo.Client {
 	uri := Config.GetString("mongo")
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri).SetMaxPoolSize(20))
+	client, err := mongo.Connect(NewCtx(), options.Client().ApplyURI(uri).SetMaxPoolSize(20))
 	if err != nil {
 		logger.Fatal(err)
 	}
-	err = client.Ping(ctx, readpref.Primary())
+	err = client.Ping(NewCtx(), readpref.Primary())
 	if err != nil {
 		logger.Fatal(err)
 	} else {
@@ -24,7 +25,13 @@ func getMongoClient() *mongo.Client {
 }
 
 func getDatabase() *mongo.Database {
-	c := getMongoClient()
-	db := c.Database("pancake")
+	db := GetMongoClient().Database("pancake")
 	return db
+}
+
+func GetMongoClient() *mongo.Client {
+	if client == nil {
+		client = NewMongoClient()
+	}
+	return client
 }

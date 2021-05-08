@@ -1,9 +1,8 @@
-package script
+package screenplay
 
 import (
 	"backend/source"
 	"backend/source/tool"
-	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,22 +14,22 @@ var dao *Dao
 type Dao struct {
 	collection *mongo.Collection
 	logger     *logrus.Logger
-	ctx        context.Context
+	*tool.CtxManager
 }
 
 func init() {
 	dao = new(Dao)
-	dao.ctx = source.GetCtx()
 	dao.logger = source.GetLogger()
-	dao.collection = source.DB.Collection("script")
+	dao.collection = source.DB.Collection("screenplay")
+	dao.CtxManager = tool.GetCtxManager()
 }
 
-func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*Script, error) {
-	one := d.collection.FindOne(d.ctx, filter, opt)
+func (d *Dao) FindOne(filter interface{}, opt *options.FindOneOptions) (*Screenplay, error) {
+	one := d.collection.FindOne(d.Ctx(), filter, opt)
 	if one == nil {
 		return nil, errors.New("not find")
 	}
-	s := new(Script)
+	s := new(Screenplay)
 	err := one.Decode(s)
 	s.Id = tool.ConObjectIDToString(s.ObjId)
 	return s, err

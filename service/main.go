@@ -21,6 +21,7 @@ func main() {
 		logger.Fatal(err)
 	}
 	logger.Infoln("server exited...")
-	defer source.GetCancel()()
+	mongoClient := source.GetMongoClient()
+	_ = mongoClient.Disconnect(source.NewCtx())
 	return
 }
