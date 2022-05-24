@@ -1,16 +1,16 @@
 package router
 
 import (
-	"backend/source"
-	"backend/user"
+	"github.com/gin-gonic/gin"
+	"service/middleware"
+	"service/user"
 )
 
-func registerUserRouter() {
+func registerUserRouter(e *gin.Engine) {
 	svr := user.GetService()
 	router := e.Group("/user")
-	router.Use(source.AuthMiddleware())
-	router.GET("/getUserInfo", svr.GetUserInfo)
-	e.GET("/login", user.GetService().Login)
-	e.PUT("/register", svr.RegisterUser)
+	router.Use(middleware.AuthMiddleware())
+	//e.GET("/login", user.GetService().Login)
+	e.POST("/register", svr.RegisterUser)
 	e.GET("/sendVerificationCode", svr.SendVerificationCode)
 }

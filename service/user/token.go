@@ -1,9 +1,10 @@
-package source
+package user
 
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
+	"service/source"
 	"time"
 )
 
@@ -18,7 +19,7 @@ var (
 
 func init() {
 	j = new(JWT)
-	j.logger = GetLogger()
+	j.logger = source.GetLogger()
 }
 
 type JWT struct {
@@ -28,19 +29,19 @@ type JWT struct {
 type Claims struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
-	Phone string `json:"phone"`
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func (j *JWT) GenerateToken(id, Name, phone string) (string, error) {
+func (j *JWT) GenerateToken(id, Name, email string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(3600 * 16 * time.Second)
 	issuer := "pancake"
-	c := Claims{id, Name, phone, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
+	c := Claims{id, Name, email, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	tokenS, err := token.SignedString(signKey)
 	if err != nil {
-		GetLogger().Errorln(id, Name, err)
+		source.GetLogger().Errorln(id, Name, err)
 	}
 	return tokenS, err
 }

@@ -13,9 +13,11 @@ type Screenplay struct {
 	Noun         *Noun              `bson:"noun" json:"noun"`
 	Tag          []string           `bson:"tag" json:"tag"`
 	Style        string             `bson:"style" json:"style"`
-	RegisterTime float64            `bson:"registerTime" json:"registerTime"`
-	UpdateTime   float64            `bson:"updateTime" json:"updateTime"`
+	RegisterTime int64              `bson:"registerTime" json:"registerTime"`
+	UpdateTime   int64              `bson:"updateTime" json:"updateTime"`
 }
+
+// TODO 剧本角色海报 名字
 
 type Noun struct {
 	Num      int  `bson:"num" json:"num"`
@@ -25,7 +27,7 @@ type Noun struct {
 }
 
 /*
-db.screenplay.createIndex({name:1},{unique:true})
+db.screenplay.createIndex({name:1,store:1},{unique:true})
 db.screenplay.createIndex({store:1,tag:1})
 db.screenplay.createIndex({store:1,style:1})
 db.screenplay.createIndex({store:1,noun.num:1})

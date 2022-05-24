@@ -35,12 +35,12 @@ func (m *Manager) GetStoreInfoById(id string) (*Store, error) {
 //
 //}
 
-func (m *Manager) GetStoreList(owner string) ([]*Store, error) {
-	filter := bson.M{"owner": owner}
+func (m *Manager) GetStoreList(boss string) ([]*Store, error) {
+	filter := bson.M{"boss": boss}
 	opt := new(options.FindOptions)
 	find, err := m.dao.Find(filter, opt)
 	if err != nil {
-		m.logger.Errorln(owner, err)
+		m.logger.Errorln(boss, err)
 	}
 	return find, err
 }

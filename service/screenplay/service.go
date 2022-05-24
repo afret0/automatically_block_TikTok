@@ -19,7 +19,7 @@ func init() {
 }
 
 func (s *Service) GetOneScreenplayInfo(c *gin.Context) {
-	info, err := s.manager.GetOneScriptInfo(c.Query("id"))
+	info, err := s.manager.GetOneScreenplayInfo(c.Query("id"))
 	if err != nil {
 		s.res.NewResWithoutData(c, GetCode().Failed, err.Error())
 		return

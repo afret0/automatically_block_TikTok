@@ -6,16 +6,19 @@ type User struct {
 	ObjID        primitive.ObjectID `bson:"_id,omitempty"`
 	ID           string             `json:"id"`
 	Name         string             `bson:"name" json:"name"`
+	Email        string             `json:"email" bson:"email"`
+	Password     string             `json:"password" bson:"password"`
 	Avatar       string             `bson:"avatar" json:"avatar"`
-	Phone        string             `bson:"phone" json:"phone"`
-	Sex          int                `bson:"sex" json:"sex"`
-	WXName       string             `bson:"WXName" json:"WXName"`
-	DM           bool               `bson:"dm" json:"dm"`
-	Boss         bool               `bson:"boss" json:"boss"`
 	Token        string             `bson:"tokenManager" json:"tokenManager"`
-	Store        string             `bson:"store" json:"store"`
-	RegisterTime float64            `bson:"registerTime" json:"registerTime"`
-	UpdateTime   float64            `bson:"updateTime" json:"updateTime"`
+	RegisterTime int64              `bson:"registerTime" json:"registerTime"`
+	UpdateTime   int64              `bson:"updateTime" json:"updateTime"`
+}
+
+type RegisterInformation struct {
+	Name             string `json:"name"`
+	Email            string `json:"email"`
+	Password         string `json:"password"`
+	VerificationCode string `json:"verificationCode"`
 }
 
 //db.user.createIndex({phone:1},{unique:true})

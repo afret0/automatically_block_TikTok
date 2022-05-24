@@ -1,12 +1,25 @@
 package tool
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"strings"
 )
 
-func GetEnv() string {
+type Tool struct {
+}
+
+var tool *Tool
+
+func init() {
+	tool = new(Tool)
+}
+
+func GetTool() *Tool {
+	return tool
+}
+func (t *Tool) GetEnv() string {
 	env := os.Getenv("environment")
 	return env
 }
@@ -15,14 +28,18 @@ func GetEnv() string {
 //	return time.Now().Format("2006-01-02 15:04:05")
 //}
 
-func ConObjectIDToString(obj primitive.ObjectID) string {
+func (t *Tool) ConObjectIDToString(obj primitive.ObjectID) string {
 	i := strings.TrimLeft(obj.Hex(), "0")
 	return i
 }
 
-func ConStringToObjectID(s string) primitive.ObjectID {
+func (t *Tool) ConStringToObjectID(s string) primitive.ObjectID {
 	obj, _ := primitive.ObjectIDFromHex(s)
 	return obj
+}
+
+func (t *Tool) SprintfErr(err error) string {
+	return fmt.Sprintf("%s", err)
 }
 
 //func ReverseString(s string) string {

@@ -1,16 +1,16 @@
 package user
 
 import (
-	"backend/notice"
-	"backend/source"
-	"backend/source/tool"
-	verificationCode2 "backend/user/verificationCode"
 	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"service/source"
+	"service/source/tool"
+	"service/user/verificationCode"
+	"time"
 )
 
 var man *Manager
@@ -18,50 +18,50 @@ var man *Manager
 func init() {
 	man = new(Manager)
 	man.logger = source.GetLogger()
-	man.verifier = verificationCode2.GetVerifier()
-	man.dao = GetDao()
+	man.verifier = verificationCode.GetVerifier()
+	man.dao = getDao()
+	man.tool = tool.GetTool()
 }
 
 type Manager struct {
 	logger   *logrus.Logger
 	ctx      context.Context
-	verifier *verificationCode2.Verifier
+	verifier *verificationCode.Verifier
 	dao      *Dao
+	tool     *tool.Tool
 }
 
-func (m *Manager) RegisterUser(WXName, phone string) error {
-	//user := new(User)
-	//user.ID = man.newUserId()
-	//user.Phone = phone
-	//user.Name = WXName
-	//user.WXName = WXName
-	//user.Role = role.Customer
-
-	//filter := bson.M{"phone": phone}
-	//upt := bson.M{"$set": bson.M{"WXName": WXName, "id": m.newUserId(), "userName": WXName, "role": role.Customer}}
-	//opt := new(options.UpdateOptions)
-	//T := true
-	//opt.Upsert = &T
-	//r, code := dao.UpdateOne(m.ctx, filter, upt, opt)
-	//if code != nil {
-	//	m.logger.Errorln(phone, code)
-	//	return code
-	//}
-	return nil
+func (m *Manager) RegisterUser(ctx context.Context, Name, email, password, verificationCode string) (string, error) {
+	check := m.verifier.CheckVCode(email, verificationCode)
+	if check != true {
+		return "", CheckVerificationCodeError
+	}
+	filter := bson.M{"email": email}
+	now := time.Now().Unix()
+	upt := bson.M{"name": Name, "password": password, "registerTime": now, "updateTime": now}
+	opt := new(options.UpdateOptions)
+	upsert := true
+	opt.Upsert = &upsert
+	_, err := m.dao.UpdateOne(ctx, filter, upt, opt)
+	if err != nil {
+		m.logger.Errorln(email, err)
+		return "", err
+	}
+	return "", nil
 }
 
-func (m *Manager) Login(phone, verificationCode string) (string, error) {
+func (m *Manager) Login(ctx context.Context, phone, verificationCode string) (string, error) {
 	if !m.verifier.CheckVCode(phone, verificationCode) {
 		return "", errors.New("verificationCode error")
 	}
 	pjt := bson.M{"_id": 1, "name": 1, "token": 1}
-	user, err := m.getUserInfoByPhone(phone, pjt)
+	user, err := m.getUserInfoByPhone(ctx, phone, pjt)
 	if err != nil {
 		m.logger.Errorln(phone, err)
 		return "", err
 	}
 
-	t, err := source.GetJWT().GenerateToken(user.ID, user.Name, user.Phone)
+	t, err := GetJWT().GenerateToken(user.ID, user.Name, user.Email)
 	if err != nil {
 		return "", err
 	}
@@ -71,46 +71,45 @@ func (m *Manager) Login(phone, verificationCode string) (string, error) {
 	filter := bson.M{"phone": phone}
 	upt := bson.M{"$set": bson.M{"token": t}}
 	opt := new(options.UpdateOptions)
-	_, err = m.dao.UpdateOne(filter, upt, opt)
+	_, err = m.dao.UpdateOne(ctx, filter, upt, opt)
 	if err != nil {
 		m.logger.Errorln(phone, err)
 	}
 	return t, err
 }
 
-func (m *Manager) SendVerificationCode(senderName, phone string) error {
+func (m *Manager) SendVerificationCode(email string) error {
 	//TODO rate limit
 	vCode := m.verifier.GenVerifyCode()
-	m.verifier.SetVerifyCode(phone, vCode, 10)
-	sender := notice.GetSender(senderName)
-	return sender.SendVerificationCode(phone, vCode)
+	m.verifier.SetVerifyCode(email, vCode, 10)
+	return nil
 }
 
-func (m *Manager) getUserInfoByPhone(phone string, pjt primitive.M) (*User, error) {
+func (m *Manager) getUserInfoByPhone(ctx context.Context, phone string, pjt primitive.M) (*User, error) {
 	//phoneRev := tool.ReverseString(phone)
 	filter := bson.M{"phone": phone}
 	opt := new(options.FindOneOptions)
 	opt.Projection = pjt
-	user, err := m.dao.FindOne(filter, opt)
+	user, err := m.dao.FindOne(ctx, filter, opt)
 	if err != nil {
 		m.logger.Errorln(phone, err)
 	}
 	return user, err
 }
 
-func (m *Manager) GetUserInfoByPhone(phone string) (*User, error) {
-	pjt := bson.M{"_id": 1, "name": 1, "avatar": 1, "dm": 1}
-	return m.getUserInfoByPhone(phone, pjt)
-}
-
-func (m *Manager) GetUserInfoByID(id string) (*User, error) {
-	filter := bson.M{"_id": tool.ConStringToObjectID(id)}
+func (m *Manager) GetUserInfoByID(ctx context.Context, id string) (*User, error) {
+	//TODO 缓存
+	filter := bson.M{"_id": m.tool.ConStringToObjectID(id)}
 	opt := new(options.FindOneOptions)
 	pjt := bson.M{"name": 1, "avatar": 1, "dm": 1}
 	opt.Projection = pjt
-	one, err := m.dao.FindOne(filter, opt)
+	one, err := m.dao.FindOne(ctx, filter, opt)
 	if err != nil {
 		m.logger.Errorln(id, err)
 	}
 	return one, err
+}
+
+func GetManager() *Manager {
+	return man
 }

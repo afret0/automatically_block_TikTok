@@ -1,9 +1,11 @@
-package source
+package middleware
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"service/source"
+	"service/user"
 	"time"
 )
 
@@ -16,9 +18,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		claims, err := GetJWT().ParseToken(token)
+		claims, err := user.GetJWT().ParseToken(token)
 		if err != nil {
-			logger.Errorln(token, err)
+			source.GetLogger().Errorln(token, err)
 			c.JSON(http.StatusOK, gin.H{"code": -1, "msg": err.Error()})
 			c.Abort()
 			return
@@ -36,7 +38,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 		reqMethod := c.Request.Method
 		reqUri := c.Request.RequestURI
 		clientIP := c.ClientIP()
-		middlewareLogger.WithFields(logrus.Fields{
+		source.GetLogger().WithFields(logrus.Fields{
 			"reqTime":  startT.Format("2006-01-02 15:04:05"),
 			"latencyT": latencyT,
 			"method":   reqMethod,

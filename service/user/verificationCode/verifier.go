@@ -1,11 +1,10 @@
 package verificationCode
 
 import (
-	"backend/notice"
-	"backend/source"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"math/rand"
+	"service/source"
 	"time"
 )
 import "github.com/go-redis/redis"
@@ -16,13 +15,11 @@ func init() {
 	v = new(Verifier)
 	v.logger = source.GetLogger()
 	v.redisClient = source.GetRedisClient()
-	v.sender = notice.GetSmsSender()
 }
 
 type Verifier struct {
 	logger      *logrus.Logger
 	redisClient *redis.Client
-	sender      notice.Sender
 }
 
 func (v *Verifier) GenVerifyCode() string {
@@ -31,8 +28,8 @@ func (v *Verifier) GenVerifyCode() string {
 	return vCode
 }
 
-func (v *Verifier) GetVerifyKey(phone string) string {
-	key := fmt.Sprintf("verifyCode:%s", phone)
+func (v *Verifier) GetVerifyKey(email string) string {
+	key := fmt.Sprintf("verifyCode:%s", email)
 	return key
 }
 
@@ -41,8 +38,8 @@ func (v *Verifier) SetVerifyCode(phone, vCode string, expiration int) {
 	v.redisClient.Set(key, vCode, time.Duration(expiration)*time.Minute)
 }
 
-func (v *Verifier) CheckVCode(phone string, vCodeForCheck string) bool {
-	key := v.GetVerifyKey(phone)
+func (v *Verifier) CheckVCode(email, vCodeForCheck string) bool {
+	key := v.GetVerifyKey(email)
 	get := v.redisClient.Get(key)
 	vCode, _ := get.Result()
 	if vCode == vCodeForCheck {

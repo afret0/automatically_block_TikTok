@@ -1,12 +1,9 @@
 package user
 
-var code *Code
+import "errors"
 
-type Code struct {
-	Failed int
-}
+var CheckVerificationCodeError error
 
 func init() {
-	code = new(Code)
-	code.Failed = 100101
+	CheckVerificationCodeError = errors.New("check verification code error")
 }
