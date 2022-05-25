@@ -6,7 +6,7 @@ import (
 )
 
 func RegisterRouter(e *gin.Engine) {
-	//registerUserRouter(e)
+	registerUserRouter(e)
 	registerTestRouter(e)
 }
 

@@ -33,3 +33,7 @@ func NewCtx() context.Context {
 	//defer cancel()
 	return ctx
 }
+
+func GetConfig() *viper.Viper {
+	return Config
+}

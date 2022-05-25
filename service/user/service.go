@@ -45,7 +45,7 @@ func (s *Service) RegisterUser(ctx *gin.Context) {
 //}
 
 func (s *Service) SendVerificationCode(ctx *gin.Context) {
-	email := ctx.Query("email")
+	email := ctx.Query("smtp")
 	err := man.SendVerificationCode(email)
 	if err != nil {
 		s.logger.Errorln(email, err)

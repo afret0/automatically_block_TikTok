@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"service/middleware"
+	"service/router"
 	"service/source"
 	"service/source/tool"
 )
@@ -18,7 +19,7 @@ func main() {
 	logger.Infoln("server is running...")
 	route := gin.New()
 	route.Use(gin.Recovery(), middleware.LoggerMiddleware())
-	//router.RegisterRouter(route)
+	router.RegisterRouter(route)
 	err := route.Run(":10010")
 	if err != nil {
 		logger.Fatal(err)

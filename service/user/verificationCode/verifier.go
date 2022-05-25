@@ -33,8 +33,8 @@ func (v *Verifier) GetVerifyKey(email string) string {
 	return key
 }
 
-func (v *Verifier) SetVerifyCode(phone, vCode string, expiration int) {
-	key := v.GetVerifyKey(phone)
+func (v *Verifier) SetVerifyCode(email, vCode string, expiration int) {
+	key := v.GetVerifyKey(email)
 	v.redisClient.Set(key, vCode, time.Duration(expiration)*time.Minute)
 }
 

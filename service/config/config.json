@@ -1,8 +1,11 @@
 {
-  "mongo": "mongodb://admin:mhjs210424@127.0.0.1:27017/",
+  "mongo": "mongodb://bwg.afreto.top:27017/",
   "redis": {
-    "addr": "127.0.0.1:6379",
-    "password": "",
+    "addr": "bwg.afreto.top:10117",
+    "user": "default",
+    "password": "qpzm2745",
     "DB": 0
-  }
+  },
+  "smtp": "https://smtp.afreto.top"
 }
+
