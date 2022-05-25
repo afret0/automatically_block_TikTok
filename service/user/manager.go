@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -82,7 +83,10 @@ func (m *Manager) RegisterUser(ctx context.Context, Name, email, password, verif
 func (m *Manager) SendVerificationCode(email string) error {
 	vCode := m.verifier.GenVerifyCode()
 	m.verifier.SetVerifyCode(email, vCode, 10)
-	return nil
+	subject := "pancake 验证码"
+	text := fmt.Sprintf("霓为衣兮风为马，云之君兮纷纷而来下。\n虎鼓瑟兮鸾回车，仙之人兮列如麻。 \n\n您的验证码为: %s", vCode)
+	err := m.smtp.SendEmail(email, subject, text)
+	return err
 }
 
 //func (m *Manager) getUserInfoByPhone(ctx context.Context, phone string, pjt primitive.M) (*User, error) {
