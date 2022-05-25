@@ -7,10 +7,13 @@ import (
 type ResponseManager struct {
 }
 
+type ResponseWithoutData struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	ResponseWithoutData
+	Data interface{} `json:"data"`
 }
 
 var responseManager *ResponseManager
@@ -24,6 +27,13 @@ func (r ResponseManager) ReturnSucceedResponse(ctx *gin.Context, data interface{
 	succeedResponse.Code = 1
 	succeedResponse.Message = "succeed"
 	succeedResponse.Data = data
+	ctx.JSON(200, succeedResponse)
+}
+
+func (r ResponseManager) ReturnSucceedResponseWithoutData(ctx *gin.Context, data interface{}) {
+	succeedResponse := new(ResponseWithoutData)
+	succeedResponse.Code = 1
+	succeedResponse.Message = "succeed"
 	ctx.JSON(200, succeedResponse)
 }
 

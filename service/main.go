@@ -1,39 +1,40 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"service/middleware"
 	"service/router"
 	"service/source"
-	"service/source/tool"
 )
 
 var logger *logrus.Logger
+var route *gin.Engine
+var config *viper.Viper
 
 func init() {
 	logger = source.GetLogger()
+	route = gin.New()
+	config = source.GetConfig()
+}
+
+func GetRoute() *gin.Engine {
+	return route
 }
 
 func main() {
 	logger.Infoln("server is running...")
-	route := gin.New()
+	logger.Infoln(fmt.Sprintf("user config: %s", config.Get("config")))
 	route.Use(gin.Recovery(), middleware.LoggerMiddleware())
 	router.RegisterRouter(route)
-	err := route.Run(":10010")
+	port := config.GetString("service.port")
+	err := route.Run(fmt.Sprintf(":%s", port))
 	if err != nil {
 		logger.Fatal(err)
 	}
-	env := tool.GetTool().GetEnv()
-	config := source.Config
-	if env == "product" {
-		config.SetConfigName("config")
-		logger.SetFormatter(&logrus.JSONFormatter{})
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		config.SetConfigName("configTest")
-		logger.SetFormatter(&logrus.TextFormatter{})
-	}
+
 	logger.Infoln("server exited...")
 	mongoClient := source.GetMongoClient()
 	_ = mongoClient.Disconnect(source.NewCtx())

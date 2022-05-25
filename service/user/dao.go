@@ -21,7 +21,7 @@ type Dao struct {
 
 func init() {
 	dao = new(Dao)
-	dao.collection = source.DB.Collection("user")
+	dao.collection = source.GetDatabase().Collection("user")
 	dao.logger = source.GetLogger()
 	dao.tool = tool.GetTool()
 	//dao.CtxManager = tool.GetCtxManager()

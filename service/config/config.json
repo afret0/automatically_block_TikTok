@@ -1,4 +1,8 @@
 {
+  "config": "pro",
+  "service": {
+    "port": 1000
+  },
   "mongo": "mongodb://bwg.afreto.top:27017/",
   "redis": {
     "addr": "bwg.afreto.top:10117",

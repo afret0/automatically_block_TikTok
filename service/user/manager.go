@@ -22,6 +22,7 @@ type Manager struct {
 	smtp     *smtp.Manager
 	dao      *Dao
 	tool     *tool.Tool
+	locker   *source.Locker
 }
 
 func init() {
@@ -31,6 +32,7 @@ func init() {
 	man.dao = getDao()
 	man.tool = tool.GetTool()
 	man.smtp = smtp.GetManager()
+	man.locker = source.GetLocker()
 }
 
 func (m *Manager) RegisterUser(ctx context.Context, Name, email, password, verificationCode string) (string, error) {
@@ -44,6 +46,11 @@ func (m *Manager) RegisterUser(ctx context.Context, Name, email, password, verif
 	opt := new(options.UpdateOptions)
 	upsert := true
 	opt.Upsert = &upsert
+	lock := m.locker.Lock(email)
+	if !lock {
+		return "", m.locker.LockFailed
+	}
+	defer m.locker.Unlock(email)
 	_, err := m.dao.UpdateOne(ctx, filter, upt, opt)
 	if err != nil {
 		m.logger.Errorln(email, err)
@@ -84,7 +91,7 @@ func (m *Manager) SendVerificationCode(email string) error {
 	vCode := m.verifier.GenVerifyCode()
 	m.verifier.SetVerifyCode(email, vCode, 10)
 	subject := "pancake 验证码"
-	text := fmt.Sprintf("霓为衣兮风为马，云之君兮纷纷而来下。\n虎鼓瑟兮鸾回车，仙之人兮列如麻。 \n\n您的验证码为: %s", vCode)
+	text := fmt.Sprintf("霓为衣兮风为马，云之君兮纷纷而来下 ~ \n\n虎鼓瑟兮鸾回车，仙之人兮列如麻 ~ \n\n\n您的验证码为: %s", vCode)
 	err := m.smtp.SendEmail(email, subject, text)
 	return err
 }

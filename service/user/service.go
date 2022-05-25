@@ -45,14 +45,14 @@ func (s *Service) RegisterUser(ctx *gin.Context) {
 //}
 
 func (s *Service) SendVerificationCode(ctx *gin.Context) {
-	email := ctx.Query("smtp")
+	email := ctx.Query("email")
 	err := man.SendVerificationCode(email)
 	if err != nil {
 		s.logger.Errorln(email, err)
 		responseManager.ReturnFailedResponse(ctx, s.tool.SprintfErr(err))
 		return
 	}
-	responseManager.ReturnSucceedResponse(ctx, nil)
+	responseManager.ReturnSucceedResponseWithoutData(ctx, nil)
 }
 
 //

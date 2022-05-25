@@ -1,6 +1,7 @@
 package source
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
@@ -9,36 +10,44 @@ import (
 
 var l *Locker
 
-func init() {
-	l = new(Locker)
-	l.redis = GetRedisClient()
-	l.logger = GetLogger()
-}
-
 type Locker struct {
-	redis  *redis.Client
-	logger *logrus.Logger
+	redis      *redis.Client
+	logger     *logrus.Logger
+	LockFailed error
 }
 
 type Lock struct {
 	Key string
 }
 
-//TODO 锁
-func (l *Locker) Lock(key string) {
-	key = fmt.Sprintf("lock_%s", key)
-	nx := l.redis.SetNX(key, 1, 5*time.Second)
+func init() {
+	l = new(Locker)
+	l.redis = GetRedisClient()
+	l.logger = GetLogger()
+	l.LockFailed = errors.New("lock failed")
+}
+
+func (l *Locker) getLockKey(key string) string {
+	return fmt.Sprintf("lock_%s", key)
+}
+
+func (l *Locker) Lock(key string) bool {
+	nx := l.redis.SetNX(l.getLockKey(key), 1, 5*time.Second)
 	lockSuccess, err := nx.Result()
-	if err != nil || !lockSuccess {
-		l.logger.Errorln(err, "lock result: ", lockSuccess)
-		return
+	if err != nil {
+		l.logger.Errorln(err)
+	}
+	return lockSuccess
+}
+
+func (l *Locker) Unlock(key string) {
+	nx := l.redis.Del(l.getLockKey(key))
+	unlockSuccess, err := nx.Result()
+	if err == nil && unlockSuccess > 0 {
+		l.logger.Errorln(err, "unlock result: ", unlockSuccess)
 	}
 }
 
-func (l *Lock) Unlock() {
-
-}
-
-func GetLock() *Locker {
+func GetLocker() *Locker {
 	return l
 }

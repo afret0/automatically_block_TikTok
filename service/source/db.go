@@ -6,8 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var DB *mongo.Database
 var client *mongo.Client
+var db *mongo.Database
 
 func NewMongoClient() *mongo.Client {
 	uri := Config.GetString("mongo")
@@ -24,8 +24,10 @@ func NewMongoClient() *mongo.Client {
 	return client
 }
 
-func getDatabase() *mongo.Database {
-	db := GetMongoClient().Database("pancake")
+func GetDatabase() *mongo.Database {
+	if db == nil {
+		db = GetMongoClient().Database("pancake")
+	}
 	return db
 }
 
