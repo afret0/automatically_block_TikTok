@@ -38,11 +38,11 @@ func (v *Verifier) SetVerifyCode(email, vCode string, expiration int) {
 	v.redisClient.Set(key, vCode, time.Duration(expiration)*time.Minute)
 }
 
-func (v *Verifier) CheckVCode(email, vCodeForCheck string) bool {
+func (v *Verifier) CheckVCode(email string, vCodeForCheck int) bool {
 	key := v.GetVerifyKey(email)
 	get := v.redisClient.Get(key)
 	vCode, _ := get.Result()
-	if vCode == vCodeForCheck {
+	if vCode == fmt.Sprintf("%d", vCodeForCheck) {
 		return true
 	}
 	return false

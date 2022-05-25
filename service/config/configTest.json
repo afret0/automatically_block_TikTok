@@ -3,7 +3,7 @@
   "service": {
     "port": 1000
   },
-  "mongo": "mongodb://bwg.afreto.top:27017",
+  "mongo": "mongodb://pancake:qpzm2745@bwg.afreto.top:27017",
   "redis": {
     "addr": "bwg.afreto.top:10117",
     "user": "default",

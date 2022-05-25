@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"service/source"
@@ -79,8 +78,7 @@ func (d *Dao) FindOne(ctx context.Context, filter interface{}, opt *options.Find
 	return u, err
 }
 
-func (d *Dao) InsertOne(ctx context.Context, name, pwd, WXName, token string, opt ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	doc := bson.M{"name": name, "password": pwd, "WXName": WXName, "tokenManager": token}
-	one, err := d.collection.InsertOne(ctx, doc, opt...)
+func (d *Dao) InsertOne(ctx context.Context, doc interface{}, opt *options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+	one, err := d.collection.InsertOne(ctx, doc, opt)
 	return one, err
 }

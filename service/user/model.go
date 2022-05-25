@@ -18,7 +18,7 @@ type RegisterInformation struct {
 	Name             string `json:"name"`
 	Email            string `json:"email"`
 	Password         string `json:"password"`
-	VerificationCode string `json:"verificationCode"`
+	VerificationCode int    `json:"verificationCode"`
 }
 
 //db.user.createIndex({phone:1},{unique:true})

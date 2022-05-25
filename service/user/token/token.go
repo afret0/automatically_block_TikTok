@@ -1,9 +1,12 @@
-package user
+package token
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"service/source"
 	"time"
 )
@@ -16,10 +19,35 @@ var (
 	TokenInvalid     error  = errors.New("Couldn't handle this token:")
 	signKey          []byte = []byte("AllYourBase")
 )
+var tokenManager *Manager
 
 func init() {
 	j = new(JWT)
 	j.logger = source.GetLogger()
+}
+func GetTokenManager() *Manager {
+	if tokenManager == nil {
+		tokenManager = new(Manager)
+		tokenManager.redis = source.GetRedisClient()
+		tokenManager.config = source.GetConfig()
+	}
+	return tokenManager
+}
+
+type Manager struct {
+	redis  *redis.Client
+	config *viper.Viper
+}
+
+func (t *Manager) fmtTokenKey(key string) string {
+	return fmt.Sprintf("token:%s", key)
+}
+func (t *Manager) SaveToken(email, token string) {
+	t.redis.Set(t.fmtTokenKey(email), token, 24*15*time.Hour)
+}
+
+func (t *Manager) GetToken(email string) string {
+	return t.redis.Get(t.fmtTokenKey(email)).String()
 }
 
 type JWT struct {
@@ -27,21 +55,21 @@ type JWT struct {
 }
 
 type Claims struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"smtp"`
+	//ID    string `json:"id"`
+	//Name  string `json:"name"`
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func (j *JWT) GenerateToken(id, Name, email string) (string, error) {
+func (j *JWT) GenerateToken(email string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(3600 * 16 * time.Second)
 	issuer := "pancake"
-	c := Claims{id, Name, email, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
+	c := Claims{email, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	tokenS, err := token.SignedString(signKey)
 	if err != nil {
-		source.GetLogger().Errorln(id, Name, err)
+		source.GetLogger().Errorln(email, err)
 	}
 	return tokenS, err
 }

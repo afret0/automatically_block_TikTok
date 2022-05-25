@@ -9,6 +9,7 @@ import (
 	"service/smtp"
 	"service/source"
 	"service/source/tool"
+	"service/user/token"
 	"service/user/verificationCode"
 	"time"
 )
@@ -16,13 +17,14 @@ import (
 var man *Manager
 
 type Manager struct {
-	logger   *logrus.Logger
-	ctx      context.Context
-	verifier *verificationCode.Verifier
-	smtp     *smtp.Manager
-	dao      *Dao
-	tool     *tool.Tool
-	locker   *source.Locker
+	logger       *logrus.Logger
+	ctx          context.Context
+	verifier     *verificationCode.Verifier
+	smtp         *smtp.Manager
+	dao          *Dao
+	tool         *tool.Tool
+	locker       *source.Locker
+	tokenManager *token.Manager
 }
 
 func init() {
@@ -33,30 +35,25 @@ func init() {
 	man.tool = tool.GetTool()
 	man.smtp = smtp.GetManager()
 	man.locker = source.GetLocker()
+	man.tokenManager = token.GetTokenManager()
 }
 
-func (m *Manager) RegisterUser(ctx context.Context, Name, email, password, verificationCode string) (string, error) {
+func (m *Manager) RegisterUser(ctx context.Context, Name, email, password string, verificationCode int) (string, error) {
 	check := m.verifier.CheckVCode(email, verificationCode)
 	if check != true {
 		return "", CheckVerificationCodeError
 	}
-	filter := bson.M{"email": email}
 	now := time.Now().Unix()
-	upt := bson.M{"name": Name, "password": password, "registerTime": now, "updateTime": now}
-	opt := new(options.UpdateOptions)
-	upsert := true
-	opt.Upsert = &upsert
-	lock := m.locker.Lock(email)
-	if !lock {
-		return "", m.locker.LockFailed
-	}
-	defer m.locker.Unlock(email)
-	_, err := m.dao.UpdateOne(ctx, filter, upt, opt)
+	doc := bson.M{"email": email, "name": Name, "password": password, "registerTime": now, "updateTime": now}
+	opt := new(options.InsertOneOptions)
+	_, err := m.dao.InsertOne(ctx, doc, opt)
 	if err != nil {
 		m.logger.Errorln(email, err)
 		return "", err
 	}
-	return "", nil
+	token, err := token.GetJWT().GenerateToken(email)
+	m.tokenManager.SaveToken(email, token)
+	return token, err
 }
 
 //func (m *Manager) Login(ctx context.Context, phone, verificationCode string) (string, error) {

@@ -5,22 +5,22 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"service/source"
-	"service/user"
+	"service/user/token"
 	"time"
 )
 
 // TODO 测试
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get("token")
-		if len(token) < 1 {
+		tokenWithRequest := c.Request.Header.Get("token")
+		if len(tokenWithRequest) < 1 {
 			c.JSON(http.StatusOK, gin.H{"code": -1, "msg": "未携带 token, 请先登录"})
 			c.Abort()
 			return
 		}
-		claims, err := user.GetJWT().ParseToken(token)
+		claims, err := token.GetJWT().ParseToken(tokenWithRequest)
 		if err != nil {
-			source.GetLogger().Errorln(token, err)
+			source.GetLogger().Errorln(tokenWithRequest, err)
 			c.JSON(http.StatusOK, gin.H{"code": -1, "msg": err.Error()})
 			c.Abort()
 			return

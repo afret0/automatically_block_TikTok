@@ -29,8 +29,9 @@ func (s *Service) RegisterUser(ctx *gin.Context) {
 	}
 	token, err := man.RegisterUser(ctx, registerInformation.Name, registerInformation.Email, registerInformation.Password, registerInformation.VerificationCode)
 	if err != nil {
-		s.logger.Errorln(registerInformation.Email, err)
+		//s.logger.Errorln(registerInformation.Email, err)
 		responseManager.ReturnFailedResponse(ctx, s.tool.SprintfErr(err))
+		return
 	}
 	responseManager.ReturnSucceedResponse(ctx, map[string]string{"token": token})
 }

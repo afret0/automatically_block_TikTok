@@ -20,13 +20,6 @@ type Lock struct {
 	Key string
 }
 
-func init() {
-	l = new(Locker)
-	l.redis = GetRedisClient()
-	l.logger = GetLogger()
-	l.LockFailed = errors.New("lock failed")
-}
-
 func (l *Locker) getLockKey(key string) string {
 	return fmt.Sprintf("lock_%s", key)
 }
@@ -49,5 +42,11 @@ func (l *Locker) Unlock(key string) {
 }
 
 func GetLocker() *Locker {
+	if l == nil {
+		l = new(Locker)
+		l.redis = GetRedisClient()
+		l.logger = GetLogger()
+		l.LockFailed = errors.New("lock failed")
+	}
 	return l
 }
