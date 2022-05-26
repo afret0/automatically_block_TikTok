@@ -55,17 +55,17 @@ type JWT struct {
 }
 
 type Claims struct {
-	//ID    string `json:"id"`
-	//Name  string `json:"name"`
+	ID    string `json:"id"`
+	Name  string `json:"name"`
 	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func (j *JWT) GenerateToken(email string) (string, error) {
+func (j *JWT) GenerateToken(id, name, email string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(3600 * 16 * time.Second)
 	issuer := "pancake"
-	c := Claims{email, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
+	c := Claims{id, name, email, jwt.StandardClaims{ExpiresAt: expireTime.Unix(), Issuer: issuer}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	tokenS, err := token.SignedString(signKey)
 	if err != nil {

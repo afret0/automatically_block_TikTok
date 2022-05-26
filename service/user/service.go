@@ -20,14 +20,14 @@ func init() {
 	svr.tool = tool.GetTool()
 }
 
-func (s *Service) RegisterUser(ctx *gin.Context) {
+func (s *Service) Login(ctx *gin.Context) {
 	registerInformation := new(RegisterInformation)
 	err := ctx.Bind(registerInformation)
 	if err != nil {
 		s.logger.Errorln(err)
 		return
 	}
-	token, err := man.RegisterUser(ctx, registerInformation.Name, registerInformation.Email, registerInformation.Password, registerInformation.VerificationCode)
+	token, err := man.Login(ctx, registerInformation.Name, registerInformation.Email, registerInformation.VerificationCode)
 	if err != nil {
 		//s.logger.Errorln(registerInformation.Email, err)
 		responseManager.ReturnFailedResponse(ctx, s.tool.SprintfErr(err))

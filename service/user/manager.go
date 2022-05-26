@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"service/smtp"
 	"service/source"
@@ -38,22 +39,24 @@ func init() {
 	man.tokenManager = token.GetTokenManager()
 }
 
-func (m *Manager) RegisterUser(ctx context.Context, Name, email, password string, verificationCode int) (string, error) {
+func (m *Manager) Login(ctx context.Context, name, email string, verificationCode int) (string, error) {
 	check := m.verifier.CheckVCode(email, verificationCode)
 	if check != true {
 		return "", CheckVerificationCodeError
 	}
 	now := time.Now().Unix()
-	doc := bson.M{"email": email, "name": Name, "password": password, "registerTime": now, "updateTime": now}
+	doc := bson.M{"email": email, "name": name, "registerTime": now, "updateTime": now}
 	opt := new(options.InsertOneOptions)
-	_, err := m.dao.InsertOne(ctx, doc, opt)
+	res, err := m.dao.InsertOne(ctx, doc, opt)
 	if err != nil {
 		m.logger.Errorln(email, err)
 		return "", err
 	}
-	token, err := token.GetJWT().GenerateToken(email)
-	m.tokenManager.SaveToken(email, token)
-	return token, err
+	insertId, err := primitive.ObjectIDFromHex(fmt.Sprintf("%s", res.InsertedID))
+	id := m.tool.ConObjectIDToString(insertId)
+	tokenStr, err := token.GetJWT().GenerateToken(id, name, email)
+	m.tokenManager.SaveToken(email, tokenStr)
+	return tokenStr, err
 }
 
 //func (m *Manager) Login(ctx context.Context, phone, verificationCode string) (string, error) {

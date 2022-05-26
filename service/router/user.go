@@ -10,6 +10,6 @@ func registerUserRouter(e *gin.Engine) {
 	svr := user.GetService()
 	router := e.Group("/user")
 	router.Use(middleware.AuthMiddleware())
-	e.POST("/register", svr.RegisterUser)
+	e.POST("/login", svr.Login)
 	e.GET("/sendVerificationCode", svr.SendVerificationCode)
 }
